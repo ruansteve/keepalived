@@ -980,6 +980,8 @@ vrrp_dispatcher_read_timeout(int fd)
 	vrid = vrrp_timer_vrid_timeout(fd);
 	vrrp = vrrp_index_lookup(vrid, fd);
 
+    log_message(LOG_INFO, " vrrp(%s) vrrp_dispatcher_read_timeout",  vrrp->iname);
+
 	/* Run the FSM handler */
 	prev_state = vrrp->state;
 	VRRP_FSM_READ_TO(vrrp);
@@ -1035,9 +1037,12 @@ vrrp_dispatcher_read(sock_t * sock)
 	vrrp = vrrp_index_lookup(hd->vrid, sock->fd_in);
 
 	/* If no instance found => ignore the advert */
-	if (!vrrp)
+	if (!vrrp) {
+		log_message(LOG_INFO, " vrrp(%s) vrrp_dispatcher_read vrid(%d) failed",  vrrp->iname, hd->vrid);
 		return sock->fd_in;
+	}
 
+    log_message(LOG_INFO, " vrrp(%s) vrrp_dispatcher_read",  vrrp->iname);
 	vrrp->pkt_saddr = src_addr;
 
 	/* Run the FSM handler */

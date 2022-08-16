@@ -51,7 +51,7 @@
 #include "keepalived_netlink.h"
 
 #define	LOG_FACILITY_MAX	7
-#define	VERSION_STRING		PACKAGE_NAME " v" PACKAGE_VERSION " (" GIT_DATE ")"
+#define	VERSION_STRING		PACKAGE_NAME " v" PACKAGE_VERSION " (" GIT_DATE ")" "built by zstack.io 2022.08.11"
 #define COPYRIGHT_STRING	"Copyright(C) 2001-" GIT_YEAR " Alexandre Cassen, <acassen@gmail.com>"
 #define BUILD_OPTIONS		CONFIGURATION_OPTIONS
 

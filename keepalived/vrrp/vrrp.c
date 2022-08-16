@@ -1162,6 +1162,8 @@ vrrp_send_adv(vrrp_t * vrrp, uint8_t prio)
 		vrrp_send_pkt(vrrp, NULL);
 	}
 
+    log_message(LOG_INFO, "VRRP_Instance(%s) send advert to %s (%m)" , vrrp->iname, inet_sockaddrtos(addr));
+
 	++vrrp->stats->advert_sent;
 	/* sent it */
 	return 0;
