@@ -882,7 +882,7 @@ print_parent_data(__attribute__((unused)) thread_ref_t thread)
 {
 	FILE *fp;
 
-	log_message(LOG_INFO, "Printing parent data for process(%d) on signal", getpid());
+	//log_message(LOG_INFO, "Printing parent data for process(%d) on signal", getpid());
 
 	fp = open_dump_file("keepalived_parent.data");
 

@@ -1437,8 +1437,10 @@ vrrp_send_pkt(vrrp_t * vrrp, unicast_peer_t *peer)
 	struct msghdr msg;
 	struct iovec iov;
 	char cbuf[256] __attribute__((aligned(__alignof__(struct cmsghdr))));
+	char addr_str[INET6_ADDRSTRLEN];
 
 	/* Build the message data */
+	memset(addr_str, 0, sizeof(addr_str));
 	memset(&msg, 0, sizeof(msg));
 	msg.msg_iov = &iov;
 	msg.msg_iovlen = 1;
@@ -1453,17 +1455,21 @@ vrrp_send_pkt(vrrp_t * vrrp, unicast_peer_t *peer)
 	if (peer && peer->address.ss_family == AF_INET) {
 		msg.msg_name = &peer->address;
 		msg.msg_namelen = sizeof(struct sockaddr_in);
+		inet_ntop(AF_INET, &peer->address, addr_str, sizeof(addr_str));
 	} else if (peer && peer->address.ss_family == AF_INET6) {
 		msg.msg_name = &peer->address;
 		msg.msg_namelen = sizeof(struct sockaddr_in6);
 		vrrp_build_ancillary_data(&msg, cbuf, src, vrrp);
+		inet_ntop(AF_INET6, &peer->address, addr_str, sizeof(addr_str));
 	} else if (vrrp->family == AF_INET) { /* Multicast sending path */
 		msg.msg_name = &vrrp->mcast_daddr;
 		msg.msg_namelen = sizeof(struct sockaddr_in);
+		inet_ntop(AF_INET, &global_data->vrrp_mcast_group4, addr_str, sizeof(addr_str));
 	} else if (vrrp->family == AF_INET6) {
 		msg.msg_name = &vrrp->mcast_daddr;
 		msg.msg_namelen = sizeof(struct sockaddr_in6);
 		vrrp_build_ancillary_data(&msg, cbuf, src, vrrp);
+		inet_ntop(AF_INET6, &global_data->vrrp_mcast_group6, addr_str, sizeof(addr_str));
 	}
 
 #ifdef _CHECKSUM_DEBUG_
@@ -1472,7 +1478,10 @@ vrrp_send_pkt(vrrp_t * vrrp, unicast_peer_t *peer)
 #endif
 
 	/* Send the packet */
-	return sendmsg(vrrp->sockets->fd_out, &msg, (peer) ? 0 : MSG_DONTROUTE);
+	ssize_t size = sendmsg(vrrp->sockets->fd_out, &msg, (peer) ? 0 : MSG_DONTROUTE);
+	
+	log_message(LOG_INFO, "vrrp_send_pkt: send advert size %ld to %s", size, addr_str);
+	return size;
 }
 
 /* Allocate the sending buffer */
