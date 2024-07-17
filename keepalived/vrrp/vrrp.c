@@ -661,19 +661,19 @@ check_tx_checksum(vrrp_t *vrrp, unicast_peer_t *peer)
 	calc_chksum = in_csum(PTR_CAST(uint16_t, hd), vrrppkt_len, acc_csum, &acc_csum);
 	hd->chksum = pkt_chksum;
 
+	struct sockaddr_storage *dst_addr;
+	struct sockaddr_storage addr;
+	if (peer)
+		dst_addr = &peer->address;
+	else {
+		inet_ip4tosockaddr(&global_data->vrrp_mcast_group4.sin_addr, &addr);
+		dst_addr = &addr;
+	}
+
 	if (calc_chksum != pkt_chksum ||
 	    !chk->sent_to ||
 	    acc_csum != chk->last_tx_checksum) {
-		struct sockaddr_storage *dst_addr;
-		struct sockaddr_storage addr;
-
-		if (peer)
-			dst_addr = &peer->address;
-		else {
-			inet_ip4tosockaddr(&global_data->vrrp_mcast_group4.sin_addr, &addr);
-			dst_addr = &addr;
-		}
-
+		
 		if (!chk->sent_to)
 			log_message(LOG_INFO, "(%s): First advert to %s, checksum: pkt 0x%4.4x, calc 0x%4.4x acc 0x%x%s",
 					vrrp->iname, inet_sockaddrtos(dst_addr),
@@ -693,10 +693,15 @@ check_tx_checksum(vrrp_t *vrrp, unicast_peer_t *peer)
 		if (vrrp->version == VRRP_VERSION_3)
 			log_buffer("IPv4 pseudo header", &ipv4_phdr, sizeof ipv4_phdr);
 		log_buffer("Advert packet", vrrp->send_buffer, vrrp->send_buffer_size);
-
+					
 		chk->sent_to = true;
 		chk->last_tx_checksum = acc_csum;
 		chk->last_tx_priority = hd->priority;
+	}
+
+	if (chk->sent_to) {
+		log_message(LOG_DEBUG, "(%s): send advert to %s, priority: %d:%d",
+					vrrp->iname, inet_sockaddrtos(dst_addr), chk->last_tx_priority, hd->priority);
 	}
 }
 
