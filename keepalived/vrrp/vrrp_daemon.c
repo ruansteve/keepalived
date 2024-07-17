@@ -721,8 +721,8 @@ sigreload_vrrp(__attribute__((unused)) void *v, __attribute__((unused)) int sig)
 static void
 sigusr1_vrrp(__attribute__((unused)) void *v, __attribute__((unused)) int sig)
 {
-	log_message(LOG_INFO, "Printing VRRP data for process(%d) on signal",
-		    getpid());
+	//log_message(LOG_INFO, "Printing VRRP data for process(%d) on signal",
+	//	    getpid());
 	thread_add_event(master, print_vrrp_data, NULL, 0);
 }
 
